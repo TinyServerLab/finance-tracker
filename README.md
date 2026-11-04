@@ -19,13 +19,13 @@ Full diagram: [`docs/architecture.md`](docs/architecture.md).
 
 Everything binds to `127.0.0.1` only — three containers (`db`, `app`,
 `backup`), no nginx, no extra frontend runtime. Soft memory limits total
-~1GB, under your 1.5GB target with headroom.
+~1GB, under your 1.5GB target with headroom.  (*Applicable for standalone deployment*)
 
 ## 1. Get the code onto the Pi
 
 ```bash
 # On your dev machine: push this folder to a new GitHub repo, then...
-git clone https://github.com/<you>/finance-tracker.git
+git clone https://github.com/TinyServerlab/finance-tracker.git
 cd finance-tracker
 ```
 
@@ -41,7 +41,7 @@ nano .env
 Fill in at minimum:
 - `POSTGRES_PASSWORD` — any long random string
 - `JWT_SECRET` — generate with `openssl rand -hex 32`
-- `CORS_ORIGINS` — your public domain, e.g. `https://finance.yourdomain.tld`
+- `CORS_ORIGINS` — your public domain, e.g. `https://apps.tinyserverlab.in`
   (harmless in production since the frontend is served same-origin, but
   keep it correct for local dev against `npm run dev`)
 
@@ -68,29 +68,15 @@ There's no self-registration by design — seed each person from the host:
 
 ```bash
 docker compose exec app python scripts/seed_admin.py \
-  --email you@example.com --name "Sathya" --password 'choose-a-strong-password'
+  --email you@example.com --name "Adam" --password 'choose-a-strong-password'
 
 docker compose exec app python scripts/seed_admin.py \
-  --email spouse@example.com --name "Spouse Name" --password 'another-strong-password'
+  --email spouse@example.com --name "Eva --password 'another-strong-password'
 ```
 
 Re-running with the same email updates that person's name/password
 instead of duplicating them.
 
-## 5. Wire up the Cloudflare Tunnel
-
-You said `cloudflared` is already running at the host level — just add
-one ingress rule pointing your chosen subdomain at the app's published
-localhost port. See [`cloudflare/config.yml.example`](cloudflare/config.yml.example)
-for the exact snippet, then:
-
-```bash
-sudo systemctl restart cloudflared   # or however you manage it
-```
-
-For the second layer of defense, add a Cloudflare Access policy
-restricting that hostname to your household's email addresses (also
-documented in the same file).
 
 ### Serving under a path (shared Caddy)
 
